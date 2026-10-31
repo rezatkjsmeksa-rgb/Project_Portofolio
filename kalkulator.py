@@ -23,3 +23,12 @@ def bagi_subnet(teks, jumlah):
     prefix_baru = jaringan.prefixlen + tambahan_bit
     hasil = list(jaringan.subnets(new_prefix=prefix_baru))
     return hasil[:jumlah]
+
+
+def cek_ip(ip_teks, jaringan_teks):
+    alamat = ipaddress.ip_address(ip_teks.strip())
+    jaringan = ipaddress.ip_network(jaringan_teks, strict=False)
+    return {
+        "termasuk": alamat in jaringan,
+        "jenis": "Private" if alamat.is_private else "Public",
+    }

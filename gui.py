@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-from kalkulator import hitung_subnet, bagi_subnet
+from kalkulator import hitung_subnet, bagi_subnet, cek_ip
 from database import buat_tabel, simpan, ambil_riwayat
 
 # ----- Warna tema -----
@@ -95,6 +95,20 @@ def bagi():
     label_bagi.config(text=teks.strip(), fg=TEKS)
 
 
+def cek():
+    try:
+        hasil = cek_ip(entry_ip_cek.get(), entry_jaringan_cek.get())
+    except ValueError:
+        messagebox.showerror("Error", "Cek penulisan IP dan jaringannya.")
+        return
+
+    if hasil["termasuk"]:
+        status = "IP ini TERMASUK dalam jaringan tersebut."
+    else:
+        status = "IP ini TIDAK termasuk dalam jaringan tersebut."
+    label_cek.config(text=f"{status}\nJenis IP : {hasil['jenis']}", fg=TEKS)
+
+
 def muat_riwayat():
     kotak_riwayat.delete(0, tk.END)
     data = ambil_riwayat()
@@ -169,6 +183,20 @@ kotak_riwayat = tk.Listbox(
     height=14,
 )
 kotak_riwayat.pack(fill="both", expand=True, padx=20, pady=(0, 14))
+
+# ----- Tab 4: Cek IP -----
+frame_cek = tk.Frame(tab, bg=BG)
+tab.add(frame_cek, text="Cek IP")
+
+tk.Label(frame_cek, text="Alamat IP yang dicek", font=("Segoe UI", 11), bg=BG, fg=TEKS).pack(pady=(18, 6))
+entry_ip_cek = buat_input(frame_cek, "192.168.1.25", 24)
+entry_ip_cek.pack(ipady=5)
+tk.Label(frame_cek, text="Jaringan (IP/prefix)", font=("Segoe UI", 11), bg=BG, fg=TEKS).pack(pady=(12, 6))
+entry_jaringan_cek = buat_input(frame_cek, "192.168.1.0/26", 24)
+entry_jaringan_cek.pack(ipady=5)
+buat_tombol(frame_cek, "Cek", cek).pack(pady=14)
+label_cek = buat_label_hasil(frame_cek)
+label_cek.pack(fill="x", padx=30)
 
 muat_riwayat()
 jendela.mainloop()

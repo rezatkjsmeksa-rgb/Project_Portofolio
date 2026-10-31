@@ -42,3 +42,11 @@ def ambil_riwayat():
     data = kursor.fetchall()
     koneksi.close()
     return data
+
+
+def hapus_semua():
+    koneksi = sqlite3.connect(NAMA_DB)
+    kursor = koneksi.cursor()
+    kursor.execute("DELETE FROM riwayat")
+    koneksi.commit()
+    koneksi.close()

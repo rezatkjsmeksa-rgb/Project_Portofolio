@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 
 from kalkulator import hitung_subnet, bagi_subnet, cek_ip
-from database import buat_tabel, simpan, ambil_riwayat
+from database import buat_tabel, simpan, ambil_riwayat, hapus_semua
 
 # ----- Warna tema -----
 BG = "#eef3f8"
@@ -12,6 +12,10 @@ ABU = "#5b6b85"
 BIRU = "#1f6feb"
 BIRU_GELAP = "#1757b8"
 ORANYE = "#f08c2e"
+
+# ----- Akun login -----
+USERNAME = "admin"
+PASSWORD = "admin"
 
 
 def buat_tombol(induk, teks, perintah):
@@ -119,7 +123,46 @@ def muat_riwayat():
         kotak_riwayat.insert(tk.END, f"{waktu} | {ip} | host: {host}")
 
 
+def hapus_riwayat():
+    if not messagebox.askyesno("Konfirmasi", "Hapus semua riwayat?"):
+        return
+    hapus_semua()
+    muat_riwayat()
+
+
+def tampilkan_login():
+    berhasil = []
+
+    jendela_login = tk.Tk()
+    jendela_login.title("Login")
+    jendela_login.geometry("340x300")
+    jendela_login.configure(bg=BG)
+
+    def coba_masuk():
+        if entry_user.get() == USERNAME and entry_pass.get() == PASSWORD:
+            berhasil.append(True)
+            jendela_login.destroy()
+        else:
+            messagebox.showerror("Login gagal", "Username atau password salah.")
+
+    tk.Label(jendela_login, text="Login Admin", font=("Segoe UI", 18, "bold"), bg=BG, fg=TEKS).pack(pady=(20, 10))
+    tk.Label(jendela_login, text="Username", font=("Segoe UI", 11), bg=BG, fg=TEKS).pack()
+    entry_user = buat_input(jendela_login, "", 20)
+    entry_user.pack(ipady=4, pady=(2, 10))
+    tk.Label(jendela_login, text="Password", font=("Segoe UI", 11), bg=BG, fg=TEKS).pack()
+    entry_pass = buat_input(jendela_login, "", 20)
+    entry_pass.config(show="*")
+    entry_pass.pack(ipady=4, pady=(2, 14))
+    buat_tombol(jendela_login, "Masuk", coba_masuk).pack()
+
+    jendela_login.mainloop()
+    return len(berhasil) > 0
+
+
 buat_tabel()
+
+if not tampilkan_login():
+    raise SystemExit
 
 jendela = tk.Tk()
 jendela.title("Subnet Calculator")
@@ -170,7 +213,11 @@ label_bagi.pack(fill="x", padx=30)
 frame_riwayat = tk.Frame(tab, bg=BG)
 tab.add(frame_riwayat, text="Riwayat")
 
-buat_tombol(frame_riwayat, "Muat Ulang", muat_riwayat).pack(pady=14)
+baris_tombol = tk.Frame(frame_riwayat, bg=BG)
+baris_tombol.pack(pady=14)
+buat_tombol(baris_tombol, "Muat Ulang", muat_riwayat).pack(side="left", padx=6)
+buat_tombol(baris_tombol, "Hapus Semua", hapus_riwayat).pack(side="left", padx=6)
+
 kotak_riwayat = tk.Listbox(
     frame_riwayat,
     font=("Consolas", 10),

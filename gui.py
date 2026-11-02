@@ -1,8 +1,9 @@
+import csv
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, filedialog
 
 from kalkulator import hitung_subnet, bagi_subnet, cek_ip
-from database import buat_tabel, simpan, ambil_riwayat, hapus_semua
+from database import buat_tabel, simpan, ambil_riwayat, hapus_semua, ambil_semua
 
 # ----- Warna tema -----
 BG = "#eef3f8"
@@ -130,6 +131,27 @@ def hapus_riwayat():
     muat_riwayat()
 
 
+def ekspor_csv():
+    data = ambil_semua()
+    if not data:
+        messagebox.showinfo("Info", "Riwayat masih kosong, tidak ada yang diekspor.")
+        return
+
+    lokasi = filedialog.asksaveasfilename(
+        defaultextension=".csv",
+        filetypes=[("File CSV", "*.csv")],
+        initialfile="riwayat_subnet.csv",
+    )
+    if not lokasi:
+        return
+
+    with open(lokasi, "w", newline="", encoding="utf-8") as berkas:
+        penulis = csv.writer(berkas)
+        penulis.writerow(["Waktu", "Input", "Network", "Broadcast", "Jumlah Host"])
+        penulis.writerows(data)
+    messagebox.showinfo("Berhasil", "Riwayat berhasil diekspor.")
+
+
 def tampilkan_login():
     berhasil = []
 
@@ -217,6 +239,7 @@ baris_tombol = tk.Frame(frame_riwayat, bg=BG)
 baris_tombol.pack(pady=14)
 buat_tombol(baris_tombol, "Muat Ulang", muat_riwayat).pack(side="left", padx=6)
 buat_tombol(baris_tombol, "Hapus Semua", hapus_riwayat).pack(side="left", padx=6)
+buat_tombol(baris_tombol, "Ekspor CSV", ekspor_csv).pack(side="left", padx=6)
 
 kotak_riwayat = tk.Listbox(
     frame_riwayat,

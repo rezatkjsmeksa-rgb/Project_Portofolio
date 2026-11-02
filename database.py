@@ -50,3 +50,14 @@ def hapus_semua():
     kursor.execute("DELETE FROM riwayat")
     koneksi.commit()
     koneksi.close()
+
+
+def ambil_semua():
+    koneksi = sqlite3.connect(NAMA_DB)
+    kursor = koneksi.cursor()
+    kursor.execute(
+        "SELECT waktu, input, network, broadcast, jumlah_host FROM riwayat ORDER BY id DESC"
+    )
+    data = kursor.fetchall()
+    koneksi.close()
+    return data

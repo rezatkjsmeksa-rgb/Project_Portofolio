@@ -85,6 +85,16 @@ def hitung():
     muat_riwayat()
 
 
+def salin_hasil():
+    teks = label_hasil.cget("text")
+    if teks == "Hasil akan tampil di sini":
+        messagebox.showinfo("Info", "Belum ada hasil untuk disalin.")
+        return
+    jendela.clipboard_clear()
+    jendela.clipboard_append(teks)
+    messagebox.showinfo("Berhasil", "Hasil disalin ke clipboard.")
+
+
 def bagi():
     ip = entry_ip_bagi.get()
     try:
@@ -188,7 +198,7 @@ if not tampilkan_login():
 
 jendela = tk.Tk()
 jendela.title("Subnet Calculator")
-jendela.geometry("620x520")
+jendela.geometry("620x560")
 jendela.configure(bg=BG)
 
 # ----- Judul -----
@@ -216,6 +226,7 @@ entry_ip.pack(ipady=5)
 buat_tombol(frame_hitung, "Hitung", hitung).pack(pady=14)
 label_hasil = buat_label_hasil(frame_hitung)
 label_hasil.pack(fill="x", padx=30)
+buat_tombol(frame_hitung, "Salin Hasil", salin_hasil).pack(pady=10)
 
 # ----- Tab 2: Bagi Subnet -----
 frame_bagi = tk.Frame(tab, bg=BG)

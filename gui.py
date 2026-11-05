@@ -3,7 +3,14 @@ import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 
 from kalkulator import hitung_subnet, bagi_subnet, cek_ip
-from database import buat_tabel, simpan, ambil_riwayat, hapus_semua, ambil_semua
+from database import (
+    buat_tabel,
+    simpan,
+    ambil_riwayat_dengan_id,
+    hapus_semua,
+    hapus_satu,
+    ambil_semua,
+)
 
 # ----- Warna tema -----
 BG = "#eef3f8"
@@ -17,6 +24,9 @@ ORANYE = "#f08c2e"
 # ----- Akun login -----
 USERNAME = "admin"
 PASSWORD = "admin"
+
+# Daftar id riwayat, urutannya sama dengan baris di kotak riwayat
+daftar_id = []
 
 
 def buat_tombol(induk, teks, perintah):
@@ -125,13 +135,26 @@ def cek():
 
 
 def muat_riwayat():
+    daftar_id.clear()
     kotak_riwayat.delete(0, tk.END)
-    data = ambil_riwayat()
+    data = ambil_riwayat_dengan_id()
     if not data:
         kotak_riwayat.insert(tk.END, "Riwayat masih kosong.")
         return
-    for waktu, ip, network, broadcast, host in data:
+    for id_riwayat, waktu, ip, host in data:
+        daftar_id.append(id_riwayat)
         kotak_riwayat.insert(tk.END, f"{waktu} | {ip} | host: {host}")
+
+
+def hapus_terpilih():
+    pilihan = kotak_riwayat.curselection()
+    if not pilihan or not daftar_id:
+        messagebox.showinfo("Info", "Pilih satu baris riwayat dulu.")
+        return
+    if not messagebox.askyesno("Konfirmasi", "Hapus riwayat yang dipilih?"):
+        return
+    hapus_satu(daftar_id[pilihan[0]])
+    muat_riwayat()
 
 
 def hapus_riwayat():
@@ -256,6 +279,8 @@ baris_tombol.pack(pady=14)
 buat_tombol(baris_tombol, "Muat Ulang", muat_riwayat).pack(side="left", padx=6)
 buat_tombol(baris_tombol, "Hapus Semua", hapus_riwayat).pack(side="left", padx=6)
 buat_tombol(baris_tombol, "Ekspor CSV", ekspor_csv).pack(side="left", padx=6)
+
+buat_tombol(frame_riwayat, "Hapus Terpilih", hapus_terpilih).pack(side="bottom", pady=(0, 12))
 
 kotak_riwayat = tk.Listbox(
     frame_riwayat,

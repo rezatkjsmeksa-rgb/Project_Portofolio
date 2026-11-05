@@ -44,10 +44,29 @@ def ambil_riwayat():
     return data
 
 
+def ambil_riwayat_dengan_id():
+    koneksi = sqlite3.connect(NAMA_DB)
+    kursor = koneksi.cursor()
+    kursor.execute(
+        "SELECT id, waktu, input, jumlah_host FROM riwayat ORDER BY id DESC LIMIT 10"
+    )
+    data = kursor.fetchall()
+    koneksi.close()
+    return data
+
+
 def hapus_semua():
     koneksi = sqlite3.connect(NAMA_DB)
     kursor = koneksi.cursor()
     kursor.execute("DELETE FROM riwayat")
+    koneksi.commit()
+    koneksi.close()
+
+
+def hapus_satu(id_riwayat):
+    koneksi = sqlite3.connect(NAMA_DB)
+    kursor = koneksi.cursor()
+    kursor.execute("DELETE FROM riwayat WHERE id = ?", (id_riwayat,))
     koneksi.commit()
     koneksi.close()
 

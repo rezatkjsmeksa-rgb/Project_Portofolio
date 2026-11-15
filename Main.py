@@ -1,5 +1,7 @@
+import csv
+
 from kalkulator import hitung_subnet, bagi_subnet, cek_ip
-from database import buat_tabel, simpan, ambil_riwayat, hapus_semua
+from database import buat_tabel, simpan, ambil_riwayat, hapus_semua, ambil_semua
 
 
 def hitung():
@@ -69,6 +71,25 @@ def hapus_riwayat():
         print("Dibatalkan.")
 
 
+def ekspor_csv():
+    data = ambil_semua()
+    if not data:
+        print("Riwayat masih kosong, tidak ada yang diekspor.")
+        return
+
+    nama_file = input("Nama file (tekan Enter untuk riwayat_subnet.csv): ")
+    if nama_file.strip() == "":
+        nama_file = "riwayat_subnet.csv"
+    if not nama_file.endswith(".csv"):
+        nama_file += ".csv"
+
+    with open(nama_file, "w", newline="", encoding="utf-8") as berkas:
+        penulis = csv.writer(berkas)
+        penulis.writerow(["Waktu", "Input", "Network", "Broadcast", "Jumlah Host"])
+        penulis.writerows(data)
+    print("Riwayat berhasil diekspor ke", nama_file)
+
+
 def menu():
     while True:
         print("\n===== SUBNET CALCULATOR =====")
@@ -77,9 +98,10 @@ def menu():
         print("3. Cek IP dalam Subnet")
         print("4. Lihat Riwayat")
         print("5. Hapus Riwayat")
-        print("6. Keluar")
+        print("6. Ekspor Riwayat ke CSV")
+        print("7. Keluar")
 
-        pilihan = input("Pilih menu (1-6): ")
+        pilihan = input("Pilih menu (1-7): ")
 
         if pilihan == "1":
             hitung()
@@ -92,6 +114,8 @@ def menu():
         elif pilihan == "5":
             hapus_riwayat()
         elif pilihan == "6":
+            ekspor_csv()
+        elif pilihan == "7":
             print("Program selesai.")
             break
         else:

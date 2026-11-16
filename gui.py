@@ -2,7 +2,7 @@ import csv
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 
-from kalkulator import hitung_subnet, bagi_subnet, cek_ip
+from kalkulator import hitung_subnet, bagi_subnet, cek_ip, hitung_host
 from database import (
     buat_tabel,
     simpan,
@@ -116,7 +116,7 @@ def bagi():
 
     teks = ""
     for nomor, subnet in enumerate(daftar, start=1):
-        teks += f"{nomor}. {subnet} | host: {subnet.num_addresses - 2}\n"
+        teks += f"{nomor}. {subnet} | host: {hitung_host(subnet)}\n"
     label_bagi.config(text=teks.strip(), fg=TEKS)
 
 

@@ -1,6 +1,6 @@
 import csv
 
-from kalkulator import hitung_subnet, bagi_subnet, cek_ip
+from kalkulator import hitung_subnet, bagi_subnet, cek_ip, hitung_host
 from database import buat_tabel, simpan, ambil_riwayat, hapus_semua, ambil_semua
 
 
@@ -32,7 +32,7 @@ def bagi():
         return
 
     for nomor, subnet in enumerate(daftar, start=1):
-        print(nomor, ".", subnet, "| host:", subnet.num_addresses - 2)
+        print(nomor, ".", subnet, "| host:", hitung_host(subnet))
 
 
 def cek():

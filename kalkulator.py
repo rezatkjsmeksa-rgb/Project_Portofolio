@@ -11,6 +11,10 @@ def hitung_host(jaringan):
     return jaringan.num_addresses - 2
 
 
+def ke_biner(alamat):
+    return ".".join(format(oktet, "08b") for oktet in alamat.packed)
+
+
 def hitung_subnet(teks):
     jaringan = ipaddress.ip_network(teks, strict=False)
     prefix = jaringan.prefixlen
@@ -35,6 +39,8 @@ def hitung_subnet(teks):
         "host_awal": host_awal,
         "host_akhir": host_akhir,
         "jumlah_host": hitung_host(jaringan),
+        "network_biner": ke_biner(jaringan.network_address),
+        "mask_biner": ke_biner(jaringan.netmask),
     }
 
 

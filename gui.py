@@ -88,7 +88,9 @@ def hitung():
         f"Broadcast       : {hasil['broadcast']}\n"
         f"Subnet mask     : {hasil['mask']}\n"
         f"Range host      : {hasil['host_awal']} - {hasil['host_akhir']}\n"
-        f"Jumlah host     : {hasil['jumlah_host']}"
+        f"Jumlah host     : {hasil['jumlah_host']}\n"
+        f"Network (biner) : {hasil['network_biner']}\n"
+        f"Mask (biner)    : {hasil['mask_biner']}"
     )
     label_hasil.config(text=teks, fg=TEKS)
     simpan(ip, hasil)

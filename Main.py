@@ -1,3 +1,4 @@
+
 import csv
 
 from kalkulator import hitung_subnet, bagi_subnet, cek_ip, hitung_host
@@ -17,6 +18,8 @@ def hitung():
     print("Subnet mask     :", hasil["mask"])
     print("Range host      :", hasil["host_awal"], "sampai", hasil["host_akhir"])
     print("Jumlah host     :", hasil["jumlah_host"])
+    print("Network (biner) :", hasil["network_biner"])
+    print("Mask (biner)    :", hasil["mask_biner"])
 
     simpan(ip, hasil)
     print("(Hasil disimpan ke riwayat)")

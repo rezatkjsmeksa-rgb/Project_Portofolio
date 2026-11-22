@@ -62,3 +62,14 @@ def cek_ip(ip_teks, jaringan_teks):
         "termasuk": alamat in jaringan,
         "jenis": "Private" if alamat.is_private else "Public",
     }
+
+
+def konversi_mask(teks):
+    teks = teks.strip().lstrip("/")
+    jaringan = ipaddress.IPv4Network("0.0.0.0/" + teks)
+    return {
+        "prefix": jaringan.prefixlen,
+        "mask": jaringan.netmask,
+        "mask_biner": ke_biner(jaringan.netmask),
+        "jumlah_host": hitung_host(jaringan),
+    }

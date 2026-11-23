@@ -1,7 +1,14 @@
-<<<<<<< HEAD
 import csv
 
-from kalkulator import hitung_subnet, bagi_subnet, cek_ip, hitung_host, konversi_mask
+from kalkulator import (
+    hitung_subnet,
+    bagi_subnet,
+    cek_ip,
+    hitung_host,
+    konversi_mask,
+    urai_kebutuhan,
+    vlsm,
+)
 from database import buat_tabel, simpan, ambil_riwayat, hapus_semua, ambil_semua
 
 
@@ -68,149 +75,17 @@ def konversi():
     print("Jumlah host     :", hasil["jumlah_host"])
 
 
-def lihat_riwayat():
-    data = ambil_riwayat()
-    if not data:
-        print("Riwayat masih kosong.")
-        return
-
-    print("\n10 perhitungan terakhir:")
-    for waktu, ip, network, broadcast, host in data:
-        print(waktu, "|", ip, "| network:", network, "| broadcast:", broadcast, "| host:", host)
-
-
-def hapus_riwayat():
-    yakin = input("Hapus semua riwayat? (y/n): ")
-    if yakin.lower() == "y":
-        hapus_semua()
-        print("Riwayat berhasil dihapus.")
-    else:
-        print("Dibatalkan.")
-
-
-def ekspor_csv():
-    data = ambil_semua()
-    if not data:
-        print("Riwayat masih kosong, tidak ada yang diekspor.")
-        return
-
-    nama_file = input("Nama file (tekan Enter untuk riwayat_subnet.csv): ")
-    if nama_file.strip() == "":
-        nama_file = "riwayat_subnet.csv"
-    if not nama_file.endswith(".csv"):
-        nama_file += ".csv"
-
-    with open(nama_file, "w", newline="", encoding="utf-8") as berkas:
-        penulis = csv.writer(berkas)
-        penulis.writerow(["Waktu", "Input", "Network", "Broadcast", "Jumlah Host"])
-        penulis.writerows(data)
-    print("Riwayat berhasil diekspor ke", nama_file)
-
-
-def menu():
-    while True:
-        print("\n===== SUBNET CALCULATOR =====")
-        print("1. Hitung Subnet")
-        print("2. Bagi Subnet")
-        print("3. Cek IP dalam Subnet")
-        print("4. Konversi Prefix / Subnet Mask")
-        print("5. Lihat Riwayat")
-        print("6. Hapus Riwayat")
-        print("7. Ekspor Riwayat ke CSV")
-        print("8. Keluar")
-
-        pilihan = input("Pilih menu (1-8): ")
-
-        if pilihan == "1":
-            hitung()
-        elif pilihan == "2":
-            bagi()
-        elif pilihan == "3":
-            cek()
-        elif pilihan == "4":
-            konversi()
-        elif pilihan == "5":
-            lihat_riwayat()
-        elif pilihan == "6":
-            hapus_riwayat()
-        elif pilihan == "7":
-            ekspor_csv()
-        elif pilihan == "8":
-            print("Program selesai.")
-            break
-        else:
-            print("Pilihan tidak valid, coba lagi.")
-
-
-buat_tabel()
-=======
-import csv
-
-from kalkulator import hitung_subnet, bagi_subnet, cek_ip, hitung_host, konversi_mask
-from database import buat_tabel, simpan, ambil_riwayat, hapus_semua, ambil_semua
-
-
-def hitung():
-    ip = input("Masukkan IP dan prefix (contoh 192.168.1.0/24): ")
+def hitung_vlsm():
+    ip = input("Masukkan jaringan induk (contoh 192.168.1.0/24): ")
+    teks = input("Kebutuhan host (contoh Siswa:100, Guru:50, Lab:20): ")
     try:
-        hasil = hitung_subnet(ip)
-    except ValueError:
-        print("Input tidak valid, contoh yang benar: 192.168.1.0/24")
+        hasil = vlsm(ip, urai_kebutuhan(teks))
+    except ValueError as pesan:
+        print("Input tidak valid:", pesan)
         return
 
-    print("Network address :", hasil["network"])
-    print("Broadcast       :", hasil["broadcast"])
-    print("Subnet mask     :", hasil["mask"])
-    print("Range host      :", hasil["host_awal"], "sampai", hasil["host_akhir"])
-    print("Jumlah host     :", hasil["jumlah_host"])
-    print("Network (biner) :", hasil["network_biner"])
-    print("Mask (biner)    :", hasil["mask_biner"])
-
-    simpan(ip, hasil)
-    print("(Hasil disimpan ke riwayat)")
-
-
-def bagi():
-    ip = input("Masukkan IP dan prefix (contoh 192.168.1.0/24): ")
-    try:
-        jumlah = int(input("Dibagi jadi berapa subnet? "))
-        daftar = bagi_subnet(ip, jumlah)
-    except ValueError:
-        print("Input tidak valid, cek IP dan jumlah subnetnya.")
-        return
-
-    for nomor, subnet in enumerate(daftar, start=1):
-        print(nomor, ".", subnet, "| host:", hitung_host(subnet))
-
-
-def cek():
-    ip = input("Masukkan alamat IP yang dicek (contoh 192.168.1.25): ")
-    jaringan = input("Masukkan jaringan (contoh 192.168.1.0/26): ")
-    try:
-        hasil = cek_ip(ip, jaringan)
-    except ValueError:
-        print("Input tidak valid, cek penulisan IP dan jaringannya.")
-        return
-
-    if hasil["termasuk"]:
-        print("IP ini TERMASUK dalam jaringan tersebut.")
-    else:
-        print("IP ini TIDAK termasuk dalam jaringan tersebut.")
-    print("Jenis IP :", hasil["jenis"])
-
-
-def konversi():
-    teks = input("Masukkan prefix atau subnet mask (contoh 24 atau 255.255.255.0): ")
-    try:
-        hasil = konversi_mask(teks)
-    except ValueError:
-        print("Input tidak valid, contoh: 24 atau 255.255.255.0")
-        return
-
-    print("Prefix          : /" + str(hasil["prefix"]))
-    print("Subnet mask     :", hasil["mask"])
-    print("Mask (biner)    :", hasil["mask_biner"])
-    print("Jumlah host     :", hasil["jumlah_host"])
+    for nama, host, subnet in hasil:
+        print(nama, "(butuh", host, ") :", subnet, "| tersedia:", hitung_host(subnet))
 
 
 def lihat_riwayat():
@@ -259,12 +134,13 @@ def menu():
         print("2. Bagi Subnet")
         print("3. Cek IP dalam Subnet")
         print("4. Konversi Prefix / Subnet Mask")
-        print("5. Lihat Riwayat")
-        print("6. Hapus Riwayat")
-        print("7. Ekspor Riwayat ke CSV")
-        print("8. Keluar")
+        print("5. VLSM")
+        print("6. Lihat Riwayat")
+        print("7. Hapus Riwayat")
+        print("8. Ekspor Riwayat ke CSV")
+        print("9. Keluar")
 
-        pilihan = input("Pilih menu (1-8): ")
+        pilihan = input("Pilih menu (1-9): ")
 
         if pilihan == "1":
             hitung()
@@ -275,12 +151,14 @@ def menu():
         elif pilihan == "4":
             konversi()
         elif pilihan == "5":
-            lihat_riwayat()
+            hitung_vlsm()
         elif pilihan == "6":
-            hapus_riwayat()
+            lihat_riwayat()
         elif pilihan == "7":
-            ekspor_csv()
+            hapus_riwayat()
         elif pilihan == "8":
+            ekspor_csv()
+        elif pilihan == "9":
             print("Program selesai.")
             break
         else:
@@ -288,5 +166,4 @@ def menu():
 
 
 buat_tabel()
->>>>>>> 773b216da373f8cb06a87fabd713907cd1fda02e
 menu()

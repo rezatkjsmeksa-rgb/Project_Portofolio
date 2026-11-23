@@ -1,9 +1,16 @@
-<<<<<<< HEAD
 import csv
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 
-from kalkulator import hitung_subnet, bagi_subnet, cek_ip, hitung_host, konversi_mask
+from kalkulator import (
+    hitung_subnet,
+    bagi_subnet,
+    cek_ip,
+    hitung_host,
+    konversi_mask,
+    urai_kebutuhan,
+    vlsm,
+)
 from database import (
     buat_tabel,
     simpan,
@@ -153,350 +160,18 @@ def konversi():
     label_konversi.config(text=teks, fg=TEKS)
 
 
-def muat_riwayat():
-    daftar_id.clear()
-    kotak_riwayat.delete(0, tk.END)
-    data = ambil_riwayat_dengan_id()
-    if not data:
-        kotak_riwayat.insert(tk.END, "Riwayat masih kosong.")
-        return
-    for id_riwayat, waktu, ip, host in data:
-        daftar_id.append(id_riwayat)
-        kotak_riwayat.insert(tk.END, f"{waktu} | {ip} | host: {host}")
-
-
-def hapus_terpilih():
-    pilihan = kotak_riwayat.curselection()
-    if not pilihan or not daftar_id:
-        messagebox.showinfo("Info", "Pilih satu baris riwayat dulu.")
-        return
-    if not messagebox.askyesno("Konfirmasi", "Hapus riwayat yang dipilih?"):
-        return
-    hapus_satu(daftar_id[pilihan[0]])
-    muat_riwayat()
-
-
-def hapus_riwayat():
-    if not messagebox.askyesno("Konfirmasi", "Hapus semua riwayat?"):
-        return
-    hapus_semua()
-    muat_riwayat()
-
-
-def ekspor_csv():
-    data = ambil_semua()
-    if not data:
-        messagebox.showinfo("Info", "Riwayat masih kosong, tidak ada yang diekspor.")
-        return
-
-    lokasi = filedialog.asksaveasfilename(
-        defaultextension=".csv",
-        filetypes=[("File CSV", "*.csv")],
-        initialfile="riwayat_subnet.csv",
-    )
-    if not lokasi:
-        return
-
-    with open(lokasi, "w", newline="", encoding="utf-8") as berkas:
-        penulis = csv.writer(berkas)
-        penulis.writerow(["Waktu", "Input", "Network", "Broadcast", "Jumlah Host"])
-        penulis.writerows(data)
-    messagebox.showinfo("Berhasil", "Riwayat berhasil diekspor.")
-
-
-def tampilkan_login():
-    berhasil = []
-
-    jendela_login = tk.Tk()
-    jendela_login.title("Login")
-    jendela_login.geometry("340x300")
-    jendela_login.configure(bg=BG)
-
-    def coba_masuk():
-        if entry_user.get() == USERNAME and entry_pass.get() == PASSWORD:
-            berhasil.append(True)
-            jendela_login.destroy()
-        else:
-            messagebox.showerror("Login gagal", "Username atau password salah.")
-
-    tk.Label(jendela_login, text="Login Admin", font=("Segoe UI", 18, "bold"), bg=BG, fg=TEKS).pack(pady=(20, 10))
-    tk.Label(jendela_login, text="Username", font=("Segoe UI", 11), bg=BG, fg=TEKS).pack()
-    entry_user = buat_input(jendela_login, "", 20)
-    entry_user.pack(ipady=4, pady=(2, 10))
-    tk.Label(jendela_login, text="Password", font=("Segoe UI", 11), bg=BG, fg=TEKS).pack()
-    entry_pass = buat_input(jendela_login, "", 20)
-    entry_pass.config(show="*")
-    entry_pass.pack(ipady=4, pady=(2, 14))
-    entry_user.bind("<Return>", lambda event: coba_masuk())
-    entry_pass.bind("<Return>", lambda event: coba_masuk())
-    buat_tombol(jendela_login, "Masuk", coba_masuk).pack()
-
-    jendela_login.mainloop()
-    return len(berhasil) > 0
-
-
-buat_tabel()
-
-if not tampilkan_login():
-    raise SystemExit
-
-jendela = tk.Tk()
-jendela.title("Subnet Calculator")
-jendela.geometry("620x560")
-jendela.configure(bg=BG)
-
-# ----- Judul -----
-tk.Label(jendela, text="Subnet Calculator", font=("Segoe UI", 20, "bold"), bg=BG, fg=TEKS).pack(pady=(14, 0))
-tk.Label(jendela, text="Hitung dan bagi subnet jaringan dengan cepat", font=("Segoe UI", 10), bg=BG, fg=ABU).pack(pady=(0, 8))
-tk.Frame(jendela, bg=ORANYE, height=3).pack(fill="x", padx=40)
-
-# ----- Gaya tab -----
-gaya = ttk.Style()
-gaya.theme_use("clam")
-gaya.configure("TNotebook", background=BG, borderwidth=0)
-gaya.configure("TNotebook.Tab", font=("Segoe UI", 10, "bold"), padding=(18, 8), background="#d5e0ee", foreground=TEKS)
-gaya.map("TNotebook.Tab", background=[("selected", BIRU)], foreground=[("selected", "white")])
-
-tab = ttk.Notebook(jendela)
-tab.pack(fill="both", expand=True, padx=14, pady=12)
-
-# ----- Tab 1: Hitung -----
-frame_hitung = tk.Frame(tab, bg=BG)
-tab.add(frame_hitung, text="Hitung")
-
-tk.Label(frame_hitung, text="Masukkan IP dan prefix", font=("Segoe UI", 11), bg=BG, fg=TEKS).pack(pady=(18, 6))
-entry_ip = buat_input(frame_hitung, "192.168.1.0/24", 24)
-entry_ip.pack(ipady=5)
-entry_ip.bind("<Return>", lambda event: hitung())
-buat_tombol(frame_hitung, "Hitung", hitung).pack(pady=14)
-label_hasil = buat_label_hasil(frame_hitung)
-label_hasil.pack(fill="x", padx=30)
-buat_tombol(frame_hitung, "Salin Hasil", salin_hasil).pack(pady=10)
-
-# ----- Tab 2: Bagi Subnet -----
-frame_bagi = tk.Frame(tab, bg=BG)
-tab.add(frame_bagi, text="Bagi Subnet")
-
-tk.Label(frame_bagi, text="Masukkan IP dan prefix", font=("Segoe UI", 11), bg=BG, fg=TEKS).pack(pady=(18, 6))
-entry_ip_bagi = buat_input(frame_bagi, "192.168.1.0/24", 24)
-entry_ip_bagi.pack(ipady=5)
-tk.Label(frame_bagi, text="Dibagi jadi berapa subnet?", font=("Segoe UI", 11), bg=BG, fg=TEKS).pack(pady=(12, 6))
-entry_jumlah = buat_input(frame_bagi, "4", 8)
-entry_jumlah.pack(ipady=5)
-entry_ip_bagi.bind("<Return>", lambda event: bagi())
-entry_jumlah.bind("<Return>", lambda event: bagi())
-buat_tombol(frame_bagi, "Bagi", bagi).pack(pady=14)
-label_bagi = buat_label_hasil(frame_bagi)
-label_bagi.pack(fill="x", padx=30)
-
-# ----- Tab 3: Riwayat -----
-frame_riwayat = tk.Frame(tab, bg=BG)
-tab.add(frame_riwayat, text="Riwayat")
-
-baris_tombol = tk.Frame(frame_riwayat, bg=BG)
-baris_tombol.pack(pady=14)
-buat_tombol(baris_tombol, "Muat Ulang", muat_riwayat).pack(side="left", padx=6)
-buat_tombol(baris_tombol, "Hapus Semua", hapus_riwayat).pack(side="left", padx=6)
-buat_tombol(baris_tombol, "Ekspor CSV", ekspor_csv).pack(side="left", padx=6)
-
-buat_tombol(frame_riwayat, "Hapus Terpilih", hapus_terpilih).pack(side="bottom", pady=(0, 12))
-
-kotak_riwayat = tk.Listbox(
-    frame_riwayat,
-    font=("Consolas", 10),
-    bg=KARTU,
-    fg=TEKS,
-    relief="solid",
-    bd=1,
-    highlightthickness=0,
-    selectbackground=BIRU,
-    height=14,
-)
-kotak_riwayat.pack(fill="both", expand=True, padx=20, pady=(0, 14))
-
-# ----- Tab 4: Cek IP -----
-frame_cek = tk.Frame(tab, bg=BG)
-tab.add(frame_cek, text="Cek IP")
-
-tk.Label(frame_cek, text="Alamat IP yang dicek", font=("Segoe UI", 11), bg=BG, fg=TEKS).pack(pady=(18, 6))
-entry_ip_cek = buat_input(frame_cek, "192.168.1.25", 24)
-entry_ip_cek.pack(ipady=5)
-tk.Label(frame_cek, text="Jaringan (IP/prefix)", font=("Segoe UI", 11), bg=BG, fg=TEKS).pack(pady=(12, 6))
-entry_jaringan_cek = buat_input(frame_cek, "192.168.1.0/26", 24)
-entry_jaringan_cek.pack(ipady=5)
-entry_ip_cek.bind("<Return>", lambda event: cek())
-entry_jaringan_cek.bind("<Return>", lambda event: cek())
-buat_tombol(frame_cek, "Cek", cek).pack(pady=14)
-label_cek = buat_label_hasil(frame_cek)
-label_cek.pack(fill="x", padx=30)
-
-# ----- Tab 5: Konversi -----
-frame_konversi = tk.Frame(tab, bg=BG)
-tab.add(frame_konversi, text="Konversi")
-
-tk.Label(frame_konversi, text="Isi prefix atau subnet mask", font=("Segoe UI", 11), bg=BG, fg=TEKS).pack(pady=(18, 6))
-entry_konversi = buat_input(frame_konversi, "24", 24)
-entry_konversi.pack(ipady=5)
-entry_konversi.bind("<Return>", lambda event: konversi())
-tk.Label(frame_konversi, text="Contoh: 24, /24, atau 255.255.255.0", font=("Segoe UI", 9), bg=BG, fg=ABU).pack(pady=(4, 0))
-buat_tombol(frame_konversi, "Konversi", konversi).pack(pady=14)
-label_konversi = buat_label_hasil(frame_konversi)
-label_konversi.pack(fill="x", padx=30)
-
-muat_riwayat()
-=======
-import csv
-import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
-
-from kalkulator import hitung_subnet, bagi_subnet, cek_ip, hitung_host, konversi_mask
-from database import (
-    buat_tabel,
-    simpan,
-    ambil_riwayat_dengan_id,
-    hapus_semua,
-    hapus_satu,
-    ambil_semua,
-)
-
-# ----- Warna tema -----
-BG = "#eef3f8"
-KARTU = "#ffffff"
-TEKS = "#14213d"
-ABU = "#5b6b85"
-BIRU = "#1f6feb"
-BIRU_GELAP = "#1757b8"
-ORANYE = "#f08c2e"
-
-# ----- Akun login -----
-USERNAME = "admin"
-PASSWORD = "admin"
-
-# Daftar id riwayat, urutannya sama dengan baris di kotak riwayat
-daftar_id = []
-
-
-def buat_tombol(induk, teks, perintah):
-    return tk.Button(
-        induk,
-        text=teks,
-        command=perintah,
-        font=("Segoe UI", 11, "bold"),
-        bg=BIRU,
-        fg="white",
-        activebackground=BIRU_GELAP,
-        activeforeground="white",
-        relief="flat",
-        padx=22,
-        pady=7,
-        cursor="hand2",
-    )
-
-
-def buat_input(induk, isi, lebar):
-    kotak = tk.Entry(
-        induk,
-        font=("Consolas", 13),
-        width=lebar,
-        relief="solid",
-        bd=1,
-        justify="center",
-    )
-    kotak.insert(0, isi)
-    return kotak
-
-
-def buat_label_hasil(induk):
-    return tk.Label(
-        induk,
-        text="Hasil akan tampil di sini",
-        font=("Consolas", 11),
-        bg=KARTU,
-        fg=ABU,
-        justify="left",
-        anchor="w",
-        padx=16,
-        pady=12,
-        relief="solid",
-        bd=1,
-    )
-
-
-def hitung():
-    ip = entry_ip.get()
+def hitung_vlsm():
     try:
-        hasil = hitung_subnet(ip)
-    except ValueError:
-        messagebox.showerror("Error", "Input tidak valid, contoh: 192.168.1.0/24")
-        return
-
-    teks = (
-        f"Network address : {hasil['network']}\n"
-        f"Broadcast       : {hasil['broadcast']}\n"
-        f"Subnet mask     : {hasil['mask']}\n"
-        f"Range host      : {hasil['host_awal']} - {hasil['host_akhir']}\n"
-        f"Jumlah host     : {hasil['jumlah_host']}\n"
-        f"Network (biner) : {hasil['network_biner']}\n"
-        f"Mask (biner)    : {hasil['mask_biner']}"
-    )
-    label_hasil.config(text=teks, fg=TEKS)
-    simpan(ip, hasil)
-    muat_riwayat()
-
-
-def salin_hasil():
-    teks = label_hasil.cget("text")
-    if teks == "Hasil akan tampil di sini":
-        messagebox.showinfo("Info", "Belum ada hasil untuk disalin.")
-        return
-    jendela.clipboard_clear()
-    jendela.clipboard_append(teks)
-    messagebox.showinfo("Berhasil", "Hasil disalin ke clipboard.")
-
-
-def bagi():
-    ip = entry_ip_bagi.get()
-    try:
-        jumlah = int(entry_jumlah.get())
-        daftar = bagi_subnet(ip, jumlah)
-    except ValueError:
-        messagebox.showerror("Error", "Cek IP dan jumlah subnet (minimal 2).")
+        kebutuhan = urai_kebutuhan(entry_kebutuhan.get())
+        hasil = vlsm(entry_ip_vlsm.get(), kebutuhan)
+    except ValueError as pesan:
+        messagebox.showerror("Error", f"Cek isian VLSM.\n{pesan}")
         return
 
     teks = ""
-    for nomor, subnet in enumerate(daftar, start=1):
-        teks += f"{nomor}. {subnet} | host: {hitung_host(subnet)}\n"
-    label_bagi.config(text=teks.strip(), fg=TEKS)
-
-
-def cek():
-    try:
-        hasil = cek_ip(entry_ip_cek.get(), entry_jaringan_cek.get())
-    except ValueError:
-        messagebox.showerror("Error", "Cek penulisan IP dan jaringannya.")
-        return
-
-    if hasil["termasuk"]:
-        status = "IP ini TERMASUK dalam jaringan tersebut."
-    else:
-        status = "IP ini TIDAK termasuk dalam jaringan tersebut."
-    label_cek.config(text=f"{status}\nJenis IP : {hasil['jenis']}", fg=TEKS)
-
-
-def konversi():
-    try:
-        hasil = konversi_mask(entry_konversi.get())
-    except ValueError:
-        messagebox.showerror("Error", "Isi prefix (contoh 24) atau subnet mask (contoh 255.255.255.0).")
-        return
-
-    teks = (
-        f"Prefix          : /{hasil['prefix']}\n"
-        f"Subnet mask     : {hasil['mask']}\n"
-        f"Mask (biner)    : {hasil['mask_biner']}\n"
-        f"Jumlah host     : {hasil['jumlah_host']}"
-    )
-    label_konversi.config(text=teks, fg=TEKS)
+    for nama, host, subnet in hasil:
+        teks += f"{nama} (butuh {host}) : {subnet} | tersedia: {hitung_host(subnet)}\n"
+    label_vlsm.config(text=teks.strip(), fg=TEKS)
 
 
 def muat_riwayat():
@@ -588,7 +263,7 @@ if not tampilkan_login():
 
 jendela = tk.Tk()
 jendela.title("Subnet Calculator")
-jendela.geometry("620x560")
+jendela.geometry("700x560")
 jendela.configure(bg=BG)
 
 # ----- Judul -----
@@ -600,7 +275,7 @@ tk.Frame(jendela, bg=ORANYE, height=3).pack(fill="x", padx=40)
 gaya = ttk.Style()
 gaya.theme_use("clam")
 gaya.configure("TNotebook", background=BG, borderwidth=0)
-gaya.configure("TNotebook.Tab", font=("Segoe UI", 10, "bold"), padding=(18, 8), background="#d5e0ee", foreground=TEKS)
+gaya.configure("TNotebook.Tab", font=("Segoe UI", 10, "bold"), padding=(14, 8), background="#d5e0ee", foreground=TEKS)
 gaya.map("TNotebook.Tab", background=[("selected", BIRU)], foreground=[("selected", "white")])
 
 tab = ttk.Notebook(jendela)
@@ -689,6 +364,21 @@ buat_tombol(frame_konversi, "Konversi", konversi).pack(pady=14)
 label_konversi = buat_label_hasil(frame_konversi)
 label_konversi.pack(fill="x", padx=30)
 
+# ----- Tab 6: VLSM -----
+frame_vlsm = tk.Frame(tab, bg=BG)
+tab.add(frame_vlsm, text="VLSM")
+
+tk.Label(frame_vlsm, text="Jaringan induk (IP/prefix)", font=("Segoe UI", 11), bg=BG, fg=TEKS).pack(pady=(18, 6))
+entry_ip_vlsm = buat_input(frame_vlsm, "192.168.1.0/24", 24)
+entry_ip_vlsm.pack(ipady=5)
+tk.Label(frame_vlsm, text="Kebutuhan host (nama:jumlah, pisahkan koma)", font=("Segoe UI", 11), bg=BG, fg=TEKS).pack(pady=(12, 6))
+entry_kebutuhan = buat_input(frame_vlsm, "Siswa:100, Guru:50, Lab:20", 34)
+entry_kebutuhan.pack(ipady=5)
+entry_ip_vlsm.bind("<Return>", lambda event: hitung_vlsm())
+entry_kebutuhan.bind("<Return>", lambda event: hitung_vlsm())
+buat_tombol(frame_vlsm, "Hitung VLSM", hitung_vlsm).pack(pady=14)
+label_vlsm = buat_label_hasil(frame_vlsm)
+label_vlsm.pack(fill="x", padx=30)
+
 muat_riwayat()
->>>>>>> 773b216da373f8cb06a87fabd713907cd1fda02e
 jendela.mainloop()

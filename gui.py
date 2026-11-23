@@ -2,7 +2,7 @@ import csv
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 
-from kalkulator import hitung_subnet, bagi_subnet, cek_ip, hitung_host
+from kalkulator import hitung_subnet, bagi_subnet, cek_ip, hitung_host, konversi_mask
 from database import (
     buat_tabel,
     simpan,
@@ -134,6 +134,22 @@ def cek():
     else:
         status = "IP ini TIDAK termasuk dalam jaringan tersebut."
     label_cek.config(text=f"{status}\nJenis IP : {hasil['jenis']}", fg=TEKS)
+
+
+def konversi():
+    try:
+        hasil = konversi_mask(entry_konversi.get())
+    except ValueError:
+        messagebox.showerror("Error", "Isi prefix (contoh 24) atau subnet mask (contoh 255.255.255.0).")
+        return
+
+    teks = (
+        f"Prefix          : /{hasil['prefix']}\n"
+        f"Subnet mask     : {hasil['mask']}\n"
+        f"Mask (biner)    : {hasil['mask_biner']}\n"
+        f"Jumlah host     : {hasil['jumlah_host']}"
+    )
+    label_konversi.config(text=teks, fg=TEKS)
 
 
 def muat_riwayat():
@@ -312,6 +328,19 @@ entry_jaringan_cek.bind("<Return>", lambda event: cek())
 buat_tombol(frame_cek, "Cek", cek).pack(pady=14)
 label_cek = buat_label_hasil(frame_cek)
 label_cek.pack(fill="x", padx=30)
+
+# ----- Tab 5: Konversi -----
+frame_konversi = tk.Frame(tab, bg=BG)
+tab.add(frame_konversi, text="Konversi")
+
+tk.Label(frame_konversi, text="Isi prefix atau subnet mask", font=("Segoe UI", 11), bg=BG, fg=TEKS).pack(pady=(18, 6))
+entry_konversi = buat_input(frame_konversi, "24", 24)
+entry_konversi.pack(ipady=5)
+entry_konversi.bind("<Return>", lambda event: konversi())
+tk.Label(frame_konversi, text="Contoh: 24, /24, atau 255.255.255.0", font=("Segoe UI", 9), bg=BG, fg=ABU).pack(pady=(4, 0))
+buat_tombol(frame_konversi, "Konversi", konversi).pack(pady=14)
+label_konversi = buat_label_hasil(frame_konversi)
+label_konversi.pack(fill="x", padx=30)
 
 muat_riwayat()
 jendela.mainloop()

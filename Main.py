@@ -1,7 +1,6 @@
-
 import csv
 
-from kalkulator import hitung_subnet, bagi_subnet, cek_ip, hitung_host
+from kalkulator import hitung_subnet, bagi_subnet, cek_ip, hitung_host, konversi_mask
 from database import buat_tabel, simpan, ambil_riwayat, hapus_semua, ambil_semua
 
 
@@ -54,6 +53,20 @@ def cek():
     print("Jenis IP :", hasil["jenis"])
 
 
+def konversi():
+    teks = input("Masukkan prefix atau subnet mask (contoh 24 atau 255.255.255.0): ")
+    try:
+        hasil = konversi_mask(teks)
+    except ValueError:
+        print("Input tidak valid, contoh: 24 atau 255.255.255.0")
+        return
+
+    print("Prefix          : /" + str(hasil["prefix"]))
+    print("Subnet mask     :", hasil["mask"])
+    print("Mask (biner)    :", hasil["mask_biner"])
+    print("Jumlah host     :", hasil["jumlah_host"])
+
+
 def lihat_riwayat():
     data = ambil_riwayat()
     if not data:
@@ -99,12 +112,13 @@ def menu():
         print("1. Hitung Subnet")
         print("2. Bagi Subnet")
         print("3. Cek IP dalam Subnet")
-        print("4. Lihat Riwayat")
-        print("5. Hapus Riwayat")
-        print("6. Ekspor Riwayat ke CSV")
-        print("7. Keluar")
+        print("4. Konversi Prefix / Subnet Mask")
+        print("5. Lihat Riwayat")
+        print("6. Hapus Riwayat")
+        print("7. Ekspor Riwayat ke CSV")
+        print("8. Keluar")
 
-        pilihan = input("Pilih menu (1-7): ")
+        pilihan = input("Pilih menu (1-8): ")
 
         if pilihan == "1":
             hitung()
@@ -113,12 +127,14 @@ def menu():
         elif pilihan == "3":
             cek()
         elif pilihan == "4":
-            lihat_riwayat()
+            konversi()
         elif pilihan == "5":
-            hapus_riwayat()
+            lihat_riwayat()
         elif pilihan == "6":
-            ekspor_csv()
+            hapus_riwayat()
         elif pilihan == "7":
+            ekspor_csv()
+        elif pilihan == "8":
             print("Program selesai.")
             break
         else:

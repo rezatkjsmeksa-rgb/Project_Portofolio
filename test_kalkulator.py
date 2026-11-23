@@ -1,5 +1,4 @@
-
-from kalkulator import hitung_subnet, bagi_subnet, cek_ip
+from kalkulator import hitung_subnet, bagi_subnet, cek_ip, konversi_mask
 
 # Hitung subnet
 assert hitung_subnet("192.168.1.0/24")["jumlah_host"] == 254
@@ -23,5 +22,16 @@ assert hitung_subnet("192.168.1.0/26")["mask_biner"] == "11111111.11111111.11111
 
 # Tes network address biner
 assert hitung_subnet("192.168.1.0/24")["network_biner"] == "11000000.10101000.00000001.00000000"
+
+# Konversi prefix dan mask
+assert str(konversi_mask("24")["mask"]) == "255.255.255.0"
+assert konversi_mask("255.255.255.192")["prefix"] == 26
+assert konversi_mask("/26")["jumlah_host"] == 62
+
+try:
+    konversi_mask("255.255.0.255")
+    assert False, "seharusnya error"
+except ValueError:
+    pass
 
 print("Semua tes lulus")

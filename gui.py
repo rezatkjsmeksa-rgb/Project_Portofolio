@@ -83,6 +83,37 @@ def buat_label_hasil(induk):
     )
 
 
+def buat_kotak_hasil(induk):
+    # Kotak teks dengan scrollbar, untuk hasil yang panjang
+    bingkai = tk.Frame(induk, bg=BG)
+    gulungan = tk.Scrollbar(bingkai)
+    gulungan.pack(side="right", fill="y")
+    kotak = tk.Text(
+        bingkai,
+        font=("Consolas", 11),
+        bg=KARTU,
+        fg=ABU,
+        relief="solid",
+        bd=1,
+        height=6,
+        wrap="none",
+        padx=12,
+        pady=8,
+        yscrollcommand=gulungan.set,
+    )
+    kotak.pack(side="left", fill="both", expand=True)
+    gulungan.config(command=kotak.yview)
+    isi_kotak(kotak, "Hasil akan tampil di sini", ABU)
+    return bingkai, kotak
+
+
+def isi_kotak(kotak, teks, warna=TEKS):
+    kotak.config(state="normal", fg=warna)
+    kotak.delete("1.0", tk.END)
+    kotak.insert("1.0", teks)
+    kotak.config(state="disabled")
+
+
 def hitung():
     ip = entry_ip.get()
     try:
@@ -127,7 +158,7 @@ def bagi():
     teks = ""
     for nomor, subnet in enumerate(daftar, start=1):
         teks += f"{nomor}. {subnet} | host: {hitung_host(subnet)}\n"
-    label_bagi.config(text=teks.strip(), fg=TEKS)
+    isi_kotak(kotak_bagi, teks.strip())
 
 
 def cek():
@@ -171,7 +202,7 @@ def hitung_vlsm():
     teks = ""
     for nama, host, subnet in hasil:
         teks += f"{nama} (butuh {host}) : {subnet} | tersedia: {hitung_host(subnet)}\n"
-    label_vlsm.config(text=teks.strip(), fg=TEKS)
+    isi_kotak(kotak_vlsm, teks.strip())
 
 
 def muat_riwayat():
@@ -263,7 +294,7 @@ if not tampilkan_login():
 
 jendela = tk.Tk()
 jendela.title("Subnet Calculator")
-jendela.geometry("700x560")
+jendela.geometry("700x600")
 jendela.configure(bg=BG)
 
 # ----- Judul -----
@@ -307,8 +338,8 @@ entry_jumlah.pack(ipady=5)
 entry_ip_bagi.bind("<Return>", lambda event: bagi())
 entry_jumlah.bind("<Return>", lambda event: bagi())
 buat_tombol(frame_bagi, "Bagi", bagi).pack(pady=14)
-label_bagi = buat_label_hasil(frame_bagi)
-label_bagi.pack(fill="x", padx=30)
+bingkai_bagi, kotak_bagi = buat_kotak_hasil(frame_bagi)
+bingkai_bagi.pack(fill="both", expand=True, padx=30, pady=(0, 14))
 
 # ----- Tab 3: Riwayat -----
 frame_riwayat = tk.Frame(tab, bg=BG)
@@ -377,8 +408,8 @@ entry_kebutuhan.pack(ipady=5)
 entry_ip_vlsm.bind("<Return>", lambda event: hitung_vlsm())
 entry_kebutuhan.bind("<Return>", lambda event: hitung_vlsm())
 buat_tombol(frame_vlsm, "Hitung VLSM", hitung_vlsm).pack(pady=14)
-label_vlsm = buat_label_hasil(frame_vlsm)
-label_vlsm.pack(fill="x", padx=30)
+bingkai_vlsm, kotak_vlsm = buat_kotak_hasil(frame_vlsm)
+bingkai_vlsm.pack(fill="both", expand=True, padx=30, pady=(0, 14))
 
 muat_riwayat()
 jendela.mainloop()
